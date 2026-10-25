@@ -1,0 +1,30 @@
+name: ci
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: 语法检查与隐私扫描
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python 语法检查
+        run: |
+          python3 -m py_compile plugin/plugin.py
+          echo "✅ py_compile OK"
+      - name: 防止误提交真实数据与凭据
+        run: |
+          fail=0
+          if git ls-files | grep -Ei '(^|/)config\.yaml$'; then
+            echo "❌ 不要把真实配置提交上来"; fail=1
+          fi
+          if grep -rnE '(ghp_[A-Za-z0-9]{20,})|(github_pat_[A-Za-z0-9_]{20,})|(sk-[A-Za-z0-9]{20,})|(-----BEGIN [A-Z ]*PRIVATE KEY-----)' \
+               --include='*.py' --include='*.md' --include='*.yaml' --include='*.yml' . ; then
+            echo "❌ 检测到疑似令牌或私钥"; fail=1
+          fi
+          if [ "$fail" -ne 0 ]; then exit 1; fi
+          echo "✅ 未发现隐私或凭据问题"

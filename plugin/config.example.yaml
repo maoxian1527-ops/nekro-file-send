@@ -1,0 +1,7 @@
+# 文件发送（跨机器）· 配置示例
+enabled: true
+max_file_mb: 8
+allow_ai_send: true
+allow_command_send: true
+data_root: "/home/ubuntu/srv/nekro_agent"
+sandbox_root: "/home/ubuntu/srv/nekro_agent/sandboxes"
